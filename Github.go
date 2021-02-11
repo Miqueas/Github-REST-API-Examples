@@ -1,4 +1,3 @@
-// Ghost: an small cli Gists utility
 package main
 
 import (
@@ -6,7 +5,6 @@ import (
   Fmt "fmt"
   Flag "flag"
   Str "strings"
-  Bytes "bytes"
   HTTP "net/http"
   IOUtil "io/ioutil"
   JSON "encoding/json"
