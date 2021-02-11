@@ -24,4 +24,4 @@ If you want to known what are the available flags, just run the with the flag `-
 
 ### More sh\*t in Go
 
-If you like this, you can check out my [gists](gist.github.com/M1que4s) for a bit more things in Go.
+If you like this, you can check out my [gists](https://gist.github.com/M1que4s) for a bit more things in Go.
