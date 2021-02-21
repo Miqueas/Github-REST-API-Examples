@@ -56,17 +56,21 @@ class GithubUser
 
     case kind
       when 'repos'
-        for val in arr do @ReposArr.push({ Name: val['name'], Desc: val['description'] }) end
-
+        for val in arr do
+          @ReposArr.push({ Name: val['name'], Desc: val['description'] })
+        end
       when 'gists'
-        for val in arr do @GistsArr.push val['description'] end
-
+        for val in arr do
+          @GistsArr.push val['description']
+        end
       when 'followers'
-        for val in arr do @FollowersArr.push '@' + val['login'] end
-
+        for val in arr do
+          @FollowersArr.push '@' + val['login']
+        end
       when 'following'
-        for val in arr do @FollowingArr.push '@' + val['login'] end
-
+        for val in arr do
+          @FollowingArr.push '@' + val['login']
+        end
       else
         puts "Unsupported endpoint: #{kind}"
     end
@@ -77,7 +81,6 @@ opts = { Followers: false, Following: false, Repos: false, Gists: false }
 
 OptionParser.new do |opt|
   opt.banner = "Usage: Github [options] <usernames...>"
-
   opt.on('-f', '--followers', 'Shows user followers') { opts[:Followers] = true }
   opt.on('-F', '--following', 'Shows user following') { opts[:Following] = true }
   opt.on('-r', '--repos', 'Shows user repos') { opts[:Repos] = true }
@@ -88,7 +91,6 @@ if ARGV.size == 0
   err = OptionParser::ParseError.new 'see -h or --help for details'
   err.reason = 'No arguments'
   raise err
-
 else
   for arg in ARGV
     user = GithubUser.new arg

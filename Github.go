@@ -12,13 +12,11 @@ import (
 
 const APIUsersURL = "https://api.github.com/users/"
 
-// Commandline flags
 var ShowFollowers = Flag.Bool("followers", false, "Show a list of who follow this user")
 var ShowFollowing = Flag.Bool("following", false, "Show a list of who the user follow")
 var ShowRepos     = Flag.Bool("repos", false, "Show a list of public user repos")
 var ShowGists     = Flag.Bool("gists", false, "Show a list of public user gists")
 
-// The type Githubuser holds some basic information
 type GithubUser struct {
   // Private
   dec *JSON.Decoder
@@ -114,7 +112,6 @@ func main() {
   }
 }
 
-// GithubUser "constructor"
 func NewGithubUser(username string) *GithubUser {
   var self = &GithubUser{}
 
@@ -146,7 +143,6 @@ func NewGithubUser(username string) *GithubUser {
   return self
 }
 
-// Fills an array with info of: repos, gists, followers and following
 func (self *GithubUser) Fetch(kind string) {
   var arr []map[string]interface{}
   var dec *JSON.Decoder
