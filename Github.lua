@@ -2,6 +2,8 @@
 local Requests = require("requests")
 -- luarocks install rapidjson
 local JSON     = require("rapidjson")
+-- luarocks install argparse
+local ArgParse = require("argparse")
 
 local APIUsersURL = "https://api.github.com/users/"
 local GithubUser  = {}
@@ -66,7 +68,60 @@ function GithubUser:Fetch(kind)
   end
 end
 
-user = GithubUser:new('M1que4s')
-print(user.Name, user.Bio, user.Link)
-user:Fetch("repos")
-user:Fetch("gists")
+local Opts = ArgParse({
+  name = "Github.lua",
+  description = "Simple example of the Github's REST API",
+  epilog = "Check out https://github.com/M1que4s/Github-REST-API-Example"
+})
+
+Opts:argument("usernames", "One or more usernames"):args("+")
+Opts:flag("-f --followers", "Shows user followers", false)
+Opts:flag("-F --following", "Shows user following", false)
+Opts:flag("-r --repos", "Shows user repos", false)
+Opts:flag("-g --gists", "Shows user gists", false)
+
+local Args = Opts:parse(arg)
+
+for _, v in ipairs(Args.usernames) do
+  local User = GithubUser:new(v)
+
+  print("Name: " .. User.Name)
+  print("Bio: " .. User.Bio)
+  print("Link: " .. User.Link)
+
+  print("Public repos: " .. User.ReposCount)
+  if Args.r or Args.repos then
+    User:Fetch("repos")
+
+    for i, v in ipairs(User.ReposArr) do
+      print(("| %02d %s: %s"):format(i, v.Name, v.Desc))
+    end
+  end
+
+  print("Public gists: " .. User.GistsCount)
+  if Args.g or Args.gists then
+    User:Fetch("gists")
+
+    for i, v in ipairs(User.GistsArr) do
+      print(("| %02d. %s"):format(i, v))
+    end
+  end
+
+  print("Followers: " .. User.FollowersCount)
+  if Args.f or Args.followers then
+    User:Fetch("followers")
+
+    for i, v in ipairs(User.FollowersArr) do
+      print("| @" .. v)
+    end
+  end
+
+  print("Following: " .. User.FollowingCount)
+  if Args.F or Args.following then
+    User:Fetch("following")
+
+    for i, v in ipairs(User.FollowingArr) do
+      print("| @" .. v)
+    end
+  end
+end
