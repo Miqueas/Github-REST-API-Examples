@@ -1,32 +1,51 @@
 [![License][LicenseBadge]][licenseURL]
 
-### _"What is this?"_
+## What is this?
 
-This is an extremely basic example of what you can do with Github's REST API.
+A set of basic examples of what you can do with Github's REST API written in different programming languages.
 
-### _"How I can run/build this?"_
+## Running/Building
 
-This example don't use any external library, so...
+### Lua
 
-If you just want to run it:
+The Lua example needs some libraries:
 
+```bash
+# For easy GET requests to the API
+luarocks install lua-requests
+# Fast JSON encoding/decoding
+luarocks install rapidjson
+# Commandline options, flags and arguments parsing
+luarocks install argparse
 ```
-go run Github.go [flags] <Username1, Username2, ..., UsernameN>
+
+After you have all these libraries, then run the example:
+
+```bash
+lua Github.lua
 ```
 
-If you want to get a binary (build):
+### Go
 
+Just run with:
+
+```bash
+go run Github.go
 ```
+
+Or build if you want:
+
+```bash
 go build Github.go
-# And then:
-./Github [flags] <Username1, Username2, ..., UsernameN>
 ```
 
-If you want to known what are the available flags, just run the with the flag `-help` to see it.
+### Ruby
 
-### More sh\*t in Go
+Same as the Go example:
 
-If you like this, you can check out my [gists](https://gist.github.com/M1que4s) for a bit more things in Go.
+```bash
+ruby Github.rb
+```
 
 [LicenseBadge]: https://img.shields.io/badge/License-Zlib-brightgreen?style=for-the-badge
 [LicenseURL]: https://opensource.org/licenses/Zlib
