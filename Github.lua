@@ -45,7 +45,14 @@ function GithubUser:Fetch(kind)
 
   if kind == "repos" then
     for i, v in ipairs(arr) do
-      self.ReposArr[i] = { Name = v["name"], Desc = v["description"] }
+      local desc = v["description"]
+
+      if type(desc) ~= "string" then desc = "(no description)" end
+
+      self.ReposArr[i] = {
+        Name = v["name"],
+        Desc = desc
+      }
     end
 
   elseif kind == "gists" then

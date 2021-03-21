@@ -57,7 +57,10 @@ class GithubUser
     case kind
       when 'repos'
         for val in arr do
-          @ReposArr.push({ Name: val['name'], Desc: val['description'] })
+          @ReposArr.push({
+            Name: val['name'],
+            Desc: val['description'] || "(no description)"
+          })
         end
       when 'gists'
         for val in arr do

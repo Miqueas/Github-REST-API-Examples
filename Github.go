@@ -168,7 +168,13 @@ func (self *GithubUser) Fetch(kind string) {
       for i, v := range arr {
         var name, _ = v["name"].(string)
         var desc, _ = v["description"].(string)
-        self.ReposArr[i] = map[string]string { "Name": name, "Desc": desc }
+
+        if desc == "" { desc = "(no description)" }
+
+        self.ReposArr[i] = map[string]string {
+          "Name": name,
+          "Desc": desc,
+        }
       }
 
     case "gists":
