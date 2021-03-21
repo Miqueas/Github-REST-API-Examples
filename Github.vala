@@ -20,8 +20,9 @@ const OptionEntry[] options = {
 };
 
 public class GithubUser : Object {
-  private string      url  { get; set; }
-  private Json.Object json { get; set; }
+  private string      url;
+  private Json.Object json;
+  public string username { private get; construct; }
 
   public string name;
   public string bio ;
@@ -36,7 +37,13 @@ public class GithubUser : Object {
   public string[] following_arr;
 
   public GithubUser(string name) {
-    this.url  = api_users_url + name;
+    Object(
+      username: name
+    );
+  }
+
+  construct {
+    this.url = api_users_url + this.username;
 
     var session = new Soup.Session();
     var msg     = new Soup.Message("GET", this.url);
