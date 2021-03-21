@@ -6,10 +6,10 @@ public struct GithubRepo {
   string desc;
 }
 
-bool followers = false;
-bool following = false;
-bool repos     = false;
-bool gists     = false;
+bool followers;
+bool following;
+bool repos;
+bool gists;
 
 const OptionEntry[] options = {
   { "followers", 'f', OptionFlags.NONE, OptionArg.NONE, ref followers, "Shows user followers", null },
@@ -88,9 +88,11 @@ public class GithubUser : Object {
         this.repos_arr = new GithubRepo[arr.get_length()];
 
         arr.foreach_element((self, idx, node) => {
-          var obj  = node.get_object();
+          var obj = node.get_object();
+
           var name = obj.get_string_member("name");
           var desc = obj.get_string_member("description");
+
           this.repos_arr[idx] = GithubRepo() {
             name = name,
             desc = (desc == null) ? "(no description)" : desc
