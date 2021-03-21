@@ -39,6 +39,19 @@ Or build if you want:
 go build Github.go
 ```
 
+### Vala
+
+You'll need this before compile the example:
+
+  - `json-glib-1.0`
+  - `libsoup-2.4`
+
+Then:
+
+```
+valac Github.vala --pkg=json-glib-1.0 --pkg=libsoup-2.4
+```
+
 ### Ruby
 
 Same as the Go example:
