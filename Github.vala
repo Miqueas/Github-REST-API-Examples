@@ -6,6 +6,19 @@ public struct GithubRepo {
   string desc;
 }
 
+bool followers = false;
+bool following = false;
+bool repos     = false;
+bool gists     = false;
+
+const OptionEntry[] options = {
+  { "followers", 'f', OptionFlags.NONE, OptionArg.NONE, ref followers, "Shows user followers", null },
+  { "following", 'F', OptionFlags.NONE, OptionArg.NONE, ref following, "Shows user following", null },
+  { "repos",     'r', OptionFlags.NONE, OptionArg.NONE, ref repos,     "Shows user repos",     null },
+  { "gists",     'g', OptionFlags.NONE, OptionArg.NONE, ref gists,     "Shows user gists",     null },
+  { null }
+};
+
 public class GithubUser : Object {
   private string      url  { get; set; }
   private Json.Object json { get; set; }
@@ -124,19 +137,7 @@ public class GithubUser : Object {
   }
 }
 
-public static int main(string[] args) {
-  bool followers = false;
-  bool following = false;
-  bool repos = false;
-  bool gists = false;
-
-  var options = new OptionEntry[4] {
-    { "followers", 'f', OptionFlags.NONE, OptionArg.NONE, &followers, "Shows user followers", null },
-    { "following", 'F', OptionFlags.NONE, OptionArg.NONE, &following, "Shows user following", null },
-    { "repos",     'r', OptionFlags.NONE, OptionArg.NONE, &repos,     "Shows user repos",     null },
-    { "gists",     'g', OptionFlags.NONE, OptionArg.NONE, &gists,     "Shows user gists",     null }
-  };
-
+int main(string[] args) {
   var opt_ctx = new OptionContext();
   opt_ctx.add_main_entries(options, null);
   opt_ctx.parse(ref args);
@@ -148,7 +149,7 @@ public static int main(string[] args) {
       var user = new GithubUser(args[i]);
 
       print("Name: %s\n", user.name);
-      print("Bio: %s\n", user.bio);
+      print("Bio: %s\n",  user.bio);
       print("Link: %s\n", user.link);
 
       print(@"Public repos: $(user.repos_count)\n");
