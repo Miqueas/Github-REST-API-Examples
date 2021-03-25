@@ -1,4 +1,4 @@
-[![License][LicenseBadge]][licenseURL]
+[![License][LicenseBadge]][LicenseURL]
 
 ## What is this?
 
