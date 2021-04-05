@@ -60,5 +60,34 @@ Same as the Go example:
 ruby Github.rb
 ```
 
+### C#
+
+__Note__: I made this on Linux and I tested the example using [Mono][Mono] (compiling with command line tools), Idk how this can be compiled on Windows.
+
+Before to compile, you'll need [Newtonsoft.Json][Json] and [Mono.Options][Options], install it using [NuGet][NuGet]:
+
+```
+nuget install Newtonsoft.Json
+nuget install Mono.Options
+```
+
+[Mono.Options][Options] is included with [Mono][Mono], but when I try to use it compiling the example, I give an error, so I used [NuGet][NuGet] to solve that.
+
+Anyway, after you have all the dependencies, just copy the downloaded .dll file by [NuGet][NuGet] to the root folder where is the C# example and compile it:
+
+```
+csc Github.cs -r:Newtonsoft.Json.dll -r:Mono.Options.dll
+```
+
+And, finally, run it:
+
+```
+mono Github.exe
+```
+
+[Mono]: https://mono-project.org
+[NuGet]: https://nuget.org
+[Json]: https://www.nuget.org/packages/Newtonsoft.Json/
+[Options]: https://www.nuget.org/packages/Mono.Options/
 [LicenseBadge]: https://img.shields.io/badge/License-Zlib-brightgreen?style=for-the-badge
 [LicenseURL]: https://opensource.org/licenses/Zlib
