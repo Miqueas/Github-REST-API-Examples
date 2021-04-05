@@ -85,7 +85,7 @@ And, finally, run it:
 mono Github.exe
 ```
 
-[Mono]: https://mono-project.org
+[Mono]: https://mono-project.com
 [NuGet]: https://nuget.org
 [Json]: https://www.nuget.org/packages/Newtonsoft.Json/
 [Options]: https://www.nuget.org/packages/Mono.Options/
