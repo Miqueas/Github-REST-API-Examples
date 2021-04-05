@@ -62,7 +62,7 @@ ruby Github.rb
 
 ### C#
 
-__Note__: I made this on Linux and I tested the example using [Mono][Mono] (compiling with command line tools), Idk how this can be compiled on Windows.
+__Note__: I made this on Linux and I tested the example using [Mono][Mono] (compiling with command line tools), Idk how this can be compiled on Windows. Also, this is my first time using C#, so the code can suck a lot.
 
 Before to compile, you'll need [Newtonsoft.Json][Json] and [Mono.Options][Options], install it using [NuGet][NuGet]:
 
