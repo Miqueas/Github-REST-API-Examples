@@ -85,6 +85,14 @@ And, finally, run it:
 mono Github.exe
 ```
 
+### Python
+
+Just run:
+
+```
+python3 Github.py ...
+```
+
 [Mono]: https://mono-project.com
 [NuGet]: https://nuget.org
 [Json]: https://www.nuget.org/packages/Newtonsoft.Json/
