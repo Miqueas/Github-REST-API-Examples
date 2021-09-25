@@ -5,168 +5,142 @@ using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
-public class GithubUser {
-  private const string APIUsersURL = "https://api.github.com/users/";
-  private const string UserAgent   = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.82 Safari/537.36";
-  private Regex   fetch_patt       = new Regex( "(repos|gists|followers|following)" );
-  private string  url;
-  private JObject json;
+namespace Gth {
+  public struct UserItem {
+    public int      Count;
+    public string[] Arr;
 
-  public struct GithubRepo {
+    public UserItem(int count) {
+      Count = count;
+      Arr   = new string[count];
+    }
+  }
+
+  public class User {
+    private const string API_USERS_URL = "https://api.github.com/users/";
+    private const string USER_AGENT    = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.82 Safari/537.36";
+    private Regex fetch_patt = new Regex( "(repos|gists|followers|following)" );
+    private string url;
+    private JObject json;
+
     public string Name;
-    public string Desc;
+    public string Bio;
+    public string Link;
+    public UserItem Repos;
+    public UserItem Gists;
+    public UserItem Followers;
+    public UserItem Following;
 
-    public GithubRepo(string name, string desc) {
-      Name = name;
-      Desc = desc;
-    }
-  }
+    public User(string name) {
+      this.url = API_USERS_URL + name;
 
-  public string Name;
-  public string Bio;
-  public string Link;
-  public int ReposCount;
-  public int GistsCount;
-  public int FollowersCount;
-  public int FollowingCount;
-  public GithubRepo[] ReposArr;
-  public string[] GistsArr;
-  public string[] FollowersArr;
-  public string[] FollowingArr;
+      var client = new WebClient();
+      client.Headers.Add("user-agent", USER_AGENT);
 
-  public GithubUser(string name) {
-    url = APIUsersURL + name;
+      var res   = client.DownloadString(this.url);
+      json = JObject.Parse(res);
 
-    var client = new WebClient();
-    client.Headers.Add("user-agent", UserAgent);
+      this.Name = json.Value<string>("name");
+      this.Bio  = json.Value<string>("bio");
+      this.Link = json.Value<string>("html_url");
 
-    var res = client.DownloadString(this.url);
-    json    = JObject.Parse(res);
-
-    this.Name           = json.Value<string>("name");
-    this.Bio            = json.Value<string>("bio");
-    this.Link           = json.Value<string>("html_url");
-    this.ReposCount     = json.Value<int>("public_repos");
-    this.GistsCount     = json.Value<int>("public_gists");
-    this.FollowersCount = json.Value<int>("followers");
-    this.FollowingCount = json.Value<int>("following");
-  }
-
-  public void Fetch(string kind) {
-    if (!fetch_patt.Match(kind).Success) {
-      Console.WriteLine($"Unsupported endpoint: {kind}");
-      return;
+      this.Repos     = new UserItem(json.Value<int>("public_repos"));
+      this.Gists     = new UserItem(json.Value<int>("public_gists"));
+      this.Followers = new UserItem(json.Value<int>("followers"));
+      this.Following = new UserItem(json.Value<int>("following"));
     }
 
-    var url    = this.url +  "/" + kind;
-    var client = new WebClient();
-    client.Headers.Add("user-agent", UserAgent);
-
-    var res = client.DownloadString(url);
-    var arr = JArray.Parse(res);
-
-    if (kind == "repos") {
-      this.ReposArr = new GithubRepo[arr.Count];
-
-      for (int i = 0; i < arr.Count; i++) {
-        var name = arr[i].Value<string>("name");
-        var desc = arr[i].Value<string>("description");
-        this.ReposArr[i] = new GithubRepo(name, desc);
+    public void Fetch(string thing) {
+      if (!fetch_patt.Match(thing).Success) {
+        Console.WriteLine($"Unsupported endpoint: {thing}");
+        return;
       }
-    } else if (kind == "gists") {
-      this.GistsArr = new string[arr.Count];
 
-      for (int i = 0; i < arr.Count; i++) {
-        var desc = arr[i].Value<string>("description");
-        this.GistsArr[i] = desc;
-      }
-    } else if (kind == "followers") {
-      this.FollowersArr = new string[arr.Count];
+      var url    = this.url +  "/" + thing;
+      var client = new WebClient();
+      client.Headers.Add("user-agent", USER_AGENT);
 
-      for (int i = 0; i < arr.Count; i++) {
-        var user = arr[i].Value<string>("login");
-        this.FollowersArr[i] = user;
-      }
-    } else if (kind == "following") {
-      this.FollowingArr = new string[arr.Count];
+      var res = client.DownloadString(url);
+      var arr = JArray.Parse(res);
 
-      for (int i = 0; i < arr.Count; i++) {
-        var user = arr[i].Value<string>("login");
-        this.FollowingArr[i] = user;
+      if (thing == "repos") {
+        for (int i = 0; i < arr.Count; i++)
+          this.Repos.Arr[i] = arr[i].Value<string>("name");
+      } else if (thing == "gists") {
+        for (int i = 0; i < arr.Count; i++)
+          this.Gists.Arr[i] = arr[i].Value<string>("description");
+      } else if (thing == "followers") {
+        for (int i = 0; i < arr.Count; i++)
+          this.Followers.Arr[i] = arr[i].Value<string>("login");
+      } else if (thing == "following") {
+        for (int i = 0; i < arr.Count; i++)
+          this.Following.Arr[i] = arr[i].Value<string>("login");
       }
     }
   }
 }
 
 public class App {
+  public static bool followers = false;
+  public static bool following = false;
+  public static bool repos = false;
+  public static bool gists = false;
+
+  public static OptionSet opts = new OptionSet {
+    { "f|followers", "Shows user followers", f => followers = f != null },
+    { "F|following", "Shows user following", F => following = F != null },
+    { "r|repos", "Shows user repos", r => repos = r != null },
+    { "g|gists", "Shows user gists", g => gists = g != null }
+  };
+
   public static void Main(string[] argv) {
-    var followers = false;
-    var following = false;
-    var repos = false;
-    var gists = false;
-
-    var opts = new OptionSet {
-      { "f|followers", "Shows user followers", f => followers = f != null },
-      { "F|following", "Shows user following", F => following = F != null },
-      { "r|repos", "Shows user repos", r => repos = r != null },
-      { "g|gists", "Shows user gists", g => gists = g != null }
-    };
-
     List<string> args = opts.Parse(argv);
 
-    if (args.Count > 0) {
+    if (!(args.Count > 0)) {
+      Console.WriteLine("No arguments");
+      return;
+    } else {
       foreach (string name in args) {
-        var user = new GithubUser(name);
+        var user = new Gth.User(name);
 
         Console.WriteLine($"Name: {user.Name}");
         Console.WriteLine($"Bio: {user.Bio}");
         Console.WriteLine($"Link: {user.Link}");
 
-        // Repos
-        Console.WriteLine($"Public repos: {user.ReposCount}");
+        Console.WriteLine($"Repos: {user.Repos.Count}");
         if (repos) {
           user.Fetch("repos");
 
-          for (var i = 0; i < user.ReposArr.Length; i++) {
-            Console.WriteLine($"| {i + 1}. {user.ReposArr[i].Name}: {user.ReposArr[i].Desc}");
-          }
+          for (var i = 0; i < user.Repos.Arr.Length; i++)
+            Console.WriteLine($"| {i + 1}. {user.Repos.Arr[i]}");
         }
 
-        // Gists
-        Console.WriteLine($"Public gists: {user.GistsCount}");
+        Console.WriteLine($"Gists: {user.Gists.Count}");
         if (gists) {
           user.Fetch("gists");
 
-          for (var i = 0; i < user.GistsArr.Length; i++) {
-            Console.WriteLine($"| {i + 1}. {user.GistsArr[i]}");
-          }
+          for (var i = 0; i < user.Gists.Arr.Length; i++)
+            Console.WriteLine($"| {i + 1}. {user.Gists.Arr[i]}");
         }
 
-        // Followers
-        Console.WriteLine($"Followers: {user.FollowersCount}");
+        Console.WriteLine($"Followers: {user.Followers.Count}");
         if (followers) {
           user.Fetch("followers");
 
-          for (var i = 0; i < user.FollowersArr.Length; i++) {
-            Console.WriteLine($"| @{user.FollowersArr[i]}");
-          }
+          for (var i = 0; i < user.Followers.Arr.Length; i++)
+            Console.WriteLine($"| @{user.Followers.Arr[i]}");
         }
 
-        // Following
-        Console.WriteLine($"Following: {user.FollowingCount}");
+        Console.WriteLine($"Following: {user.Following.Count}");
         if (following) {
           user.Fetch("following");
 
-          for (var i = 0; i < user.FollowingArr.Length; i++) {
-            Console.WriteLine($"| @{user.FollowingArr[i]}");
-          }
+          for (var i = 0; i < user.Following.Arr.Length; i++)
+            Console.WriteLine($"| @{user.Following.Arr[i]}");
         }
 
         Console.Write("\n");
       }
-    } else {
-      Console.WriteLine("No arguments");
-      return;
     }
   }
 }
