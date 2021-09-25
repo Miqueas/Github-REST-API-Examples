@@ -91,44 +91,44 @@ opts:flag("-g --gists",     "Shows user gists",     false)
 local args = opts:parse(arg)
 
 for _, v in ipairs(args.usernames) do
-  local User = GthUser:new(v)
+  local user = GthUser:new(v)
 
-  print("name: " .. User.name)
-  print("bio: " .. User.bio)
-  print("link: " .. User.link)
+  print("name: " .. user.name)
+  print("bio: " .. user.bio)
+  print("link: " .. user.link)
 
-  print("Public repos: " .. User.repos.count)
+  print("Public repos: " .. user.repos.count)
   if args.r or args.repos then
-    User:fetch("repos")
+    user:fetch("repos")
 
-    for i, v in ipairs(User.ReposArr) do
+    for i, v in ipairs(user.repos.arr) do
       print(("| %02d %s: %s"):format(i, v.name, v.Desc))
     end
   end
 
-  print("Public gists: " .. User.gists.count)
+  print("Public gists: " .. user.gists.count)
   if args.g or args.gists then
-    User:fetch("gists")
+    user:fetch("gists")
 
-    for i, v in ipairs(User.gists.arr) do
+    for i, v in ipairs(user.gists.arr) do
       print(("| %02d. %s"):format(i, v))
     end
   end
 
-  print("Followers: " .. User.followers.count)
+  print("Followers: " .. user.followers.count)
   if args.f or args.followers then
-    User:fetch("followers")
+    user:fetch("followers")
 
-    for _, v in ipairs(User.followers.arr) do
+    for _, v in ipairs(user.followers.arr) do
       print("| @" .. v)
     end
   end
 
-  print("Following: " .. User.following.count)
+  print("Following: " .. user.following.count)
   if args.F or args.following then
-    User:fetch("following")
+    user:fetch("following")
 
-    for _, v in ipairs(User.following.arr) do
+    for _, v in ipairs(user.following.arr) do
       print("| @" .. v)
     end
   end
