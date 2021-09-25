@@ -1,133 +1,134 @@
--- luarocks install lua-requests
-local Requests = require("requests")
--- luarocks install rapidjson
-local JSON     = require("rapidjson")
--- luarocks install argparse
-local ArgParse = require("argparse")
+local req      = require("requests")
+local json     = require("rapidjson")
+local argparse = require("argparse")
 
-local APIUsersURL = "https://api.github.com/users/"
-local GithubUser  = {}
+-- Base url for requests
+local API_USERS_URL = "https://api.github.com/users/"
 
-function GithubUser:new(username)
+---@class GthUser @Class for a github user basic info
+---@field url       string (private) Url to make requests, for internal usage
+---@field json      table  (private) Json response of the request
+---@field name      string (public)  User name as shown in the github profile
+---@field bio       string (public)  User bio as shown in the github profile
+---@field link      string (public)  User profile url
+---@field repos     table  (public)  Public user repositories
+---@field gists     table  (public)  Public user gists
+---@field followers table  (public)  User followers
+---@field following table  (public)  User following
+local GthUser = {}
+
+--- Constructor for GthUser class
+---@param username string The github username to get info
+---@return GthUser
+function GthUser:new(username)
   assert(
     type(username) == "string",
     "Bad argument for 'new', string expected, got " .. type(username)
   )
 
-  local Res = Requests.get(APIUsersURL .. username)
-  self.Url = APIUsersURL .. username
-  self.Obj = JSON.decode(Res.text)
+  self.url  = API_USERS_URL .. username
+  local res = req.get(self.url)
+  self.json = json.decode(res.text)
 
-  self.Name           = self.Obj['name']
-  self.Bio            = self.Obj['bio']
-  self.Link           = self.Obj['html_url']
-  self.ReposCount     = self.Obj['public_repos']
-  self.GistsCount     = self.Obj['public_gists']
-  self.FollowersCount = self.Obj['followers']
-  self.FollowingCount = self.Obj['following']
-  self.ReposArr       = {}
-  self.GistsArr       = {}
-  self.FollowersArr   = {}
-  self.FollowingArr   = {}
+  self.name = self.json['name']
+  self.bio  = self.json['bio']
+  self.link = self.json['html_url']
+
+  self.repos     = { count = self.json['public_repos'], arr = {} }
+  self.gists     = { count = self.json['public_gists'], arr = {} }
+  self.followers = { count = self.json['followers'],    arr = {} }
+  self.following = { count = self.json['following'],    arr = {} }
 
   return self
 end
 
-function GithubUser:Fetch(kind)
+--- Gets the requested data (repos, gists, followers and following)
+---@param thing string The data to request
+---@return nil
+function GthUser:fetch(thing)
   assert(
-    type(kind) == "string",
-    "Bad argument for 'new', string expected, got " .. type(kind)
+    type(thing) == "string",
+    "Bad argument for 'new', string expected, got " .. type(thing)
   )
 
-  local url = self.Url .. '/' .. kind
-  local res = Requests.get(url)
-  local arr = JSON.decode(res.text)
+  local url = self.url .. '/' .. thing
+  local res = req.get(url)
+  local arr = json.decode(res.text)
 
-  if kind == "repos" then
+  if thing == "repos" then
     for i, v in ipairs(arr) do
-      local desc = v["description"]
-
-      if type(desc) ~= "string" then desc = "(no description)" end
-
-      self.ReposArr[i] = {
-        Name = v["name"],
-        Desc = desc
-      }
+      self.repos.arr[i] = v["name"]
     end
-
-  elseif kind == "gists" then
+  elseif thing == "gists" then
     for i, v in ipairs(arr) do
-      self.GistsArr[i] = v["description"]
+      self.gists.arr[i] = v["description"]
     end
-
-  elseif kind == "followers" then
+  elseif thing == "followers" then
     for i, v in ipairs(arr) do
-      self.FollowersArr[i] = v["login"]
+      self.followers.arr[i] = v["login"]
     end
-
-  elseif kind == "following" then
+  elseif thing == "following" then
     for i, v in ipairs(arr) do
-      self.FollowingArr[i] = v["login"]
+      self.following.arr[i] = v["login"]
     end
-
   else
-    return error("Unsupported endpoint: " .. kind)
+    return error("Unsupported endpoint: " .. thing)
   end
 end
 
-local Opts = ArgParse({
-  name = "Github.lua",
+local opts = argparse({
+  name        = "Github.lua",
   description = "Simple example of the Github's REST API",
-  epilog = "Check out https://github.com/M1que4s/Github-REST-API-Example"
+  epilog      = "Check out https://github.com/M1que4s/Github-REST-API-Example"
 })
 
-Opts:argument("usernames", "One or more usernames"):args("+")
-Opts:flag("-f --followers", "Shows user followers", false)
-Opts:flag("-F --following", "Shows user following", false)
-Opts:flag("-r --repos", "Shows user repos", false)
-Opts:flag("-g --gists", "Shows user gists", false)
+opts:argument("usernames", "One or more usernames"):args("+")
+opts:flag("-f --followers", "Shows user followers", false)
+opts:flag("-F --following", "Shows user following", false)
+opts:flag("-r --repos",     "Shows user repos",     false)
+opts:flag("-g --gists",     "Shows user gists",     false)
 
-local Args = Opts:parse(arg)
+local args = opts:parse(arg)
 
-for _, v in ipairs(Args.usernames) do
-  local User = GithubUser:new(v)
+for _, v in ipairs(args.usernames) do
+  local User = GthUser:new(v)
 
-  print("Name: " .. User.Name)
-  print("Bio: " .. User.Bio)
-  print("Link: " .. User.Link)
+  print("name: " .. User.name)
+  print("bio: " .. User.bio)
+  print("link: " .. User.link)
 
-  print("Public repos: " .. User.ReposCount)
-  if Args.r or Args.repos then
-    User:Fetch("repos")
+  print("Public repos: " .. User.repos.count)
+  if args.r or args.repos then
+    User:fetch("repos")
 
     for i, v in ipairs(User.ReposArr) do
-      print(("| %02d %s: %s"):format(i, v.Name, v.Desc))
+      print(("| %02d %s: %s"):format(i, v.name, v.Desc))
     end
   end
 
-  print("Public gists: " .. User.GistsCount)
-  if Args.g or Args.gists then
-    User:Fetch("gists")
+  print("Public gists: " .. User.gists.count)
+  if args.g or args.gists then
+    User:fetch("gists")
 
-    for i, v in ipairs(User.GistsArr) do
+    for i, v in ipairs(User.gists.arr) do
       print(("| %02d. %s"):format(i, v))
     end
   end
 
-  print("Followers: " .. User.FollowersCount)
-  if Args.f or Args.followers then
-    User:Fetch("followers")
+  print("Followers: " .. User.followers.count)
+  if args.f or args.followers then
+    User:fetch("followers")
 
-    for i, v in ipairs(User.FollowersArr) do
+    for _, v in ipairs(User.followers.arr) do
       print("| @" .. v)
     end
   end
 
-  print("Following: " .. User.FollowingCount)
-  if Args.F or Args.following then
-    User:Fetch("following")
+  print("Following: " .. User.following.count)
+  if args.F or args.following then
+    User:fetch("following")
 
-    for i, v in ipairs(User.FollowingArr) do
+    for _, v in ipairs(User.following.arr) do
       print("| @" .. v)
     end
   end
