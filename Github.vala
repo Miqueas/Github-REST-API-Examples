@@ -1,10 +1,7 @@
-const string api_users_url = "https://api.github.com/users/";
-const string user_agent = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.82 Safari/537.36";
+#!/usr/bin/env valac Github.vala --pkg=json-glib-1.0 --pkg=libsoup-2.4
 
-public struct GithubRepo {
-  string name;
-  string desc;
-}
+const string API_USERS_URL = "https://api.github.com/users/";
+const string USER_AGENT    = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.82 Safari/537.36";
 
 bool followers;
 bool following;
@@ -19,127 +16,114 @@ const OptionEntry[] options = {
   { null }
 };
 
-public class GithubUser : Object {
+public struct Gth.UserItem {
+  int64    count;
+  string[] arr;
+
+  public UserItem(int64 count) {
+    this.count = count;
+    this.arr   = new string[count];
+  }
+}
+
+public class Gth.User {
   private string      url;
   private Json.Object json;
-  public string username { private get; construct; }
+  private string      username;
 
   public string name;
-  public string bio ;
+  public string bio;
   public string link;
-  public int64 repos_count;
-  public int64 gists_count;
-  public int64 followers_count;
-  public int64 following_count;
-  public GithubRepo[] repos_arr;
-  public string[] gists_arr;
-  public string[] followers_arr;
-  public string[] following_arr;
+  public Gth.UserItem repos;
+  public Gth.UserItem gists;
+  public Gth.UserItem followers;
+  public Gth.UserItem following;
 
-  public GithubUser(string name) {
-    Object(
-      username: name
-    );
-  }
+  public User(string name) {
+    this.username = name;
+    this.url      = API_USERS_URL + this.username;
 
-  construct {
-    this.url = api_users_url + this.username;
-
-    var session = new Soup.Session();
+    // The user agent is needed, otherwise, the server
+    // will return an error (status code 403)
+    var session = new Soup.Session.with_options("user-agent", USER_AGENT, null);
     var msg     = new Soup.Message("GET", this.url);
     var parser  = new Json.Parser();
 
-    // Needed, otherwise, you'll get an error (status code 403)
-    msg.request_headers.append("User-Agent", user_agent);
     session.send_message(msg);
-
-    Soup.MessageBody res = msg.response_body;
-    parser.load_from_data((string) res.data);
+    parser.load_from_data((string) msg.response_body.data);
 
     this.json = parser.get_root().get_object();
 
-    this.name            = this.json.get_string_member("name");
-    this.bio             = this.json.get_string_member("bio");
-    this.link            = this.json.get_string_member("html_url");
-    this.repos_count     = this.json.get_int_member("public_repos");
-    this.gists_count     = this.json.get_int_member("public_gists");
-    this.followers_count = this.json.get_int_member("followers");
-    this.following_count = this.json.get_int_member("following");
+    this.name = this.json.get_string_member("name");
+    this.bio  = this.json.get_string_member("bio");
+    this.link = this.json.get_string_member("html_url");
+
+    this.repos     = Gth.UserItem(this.json.get_int_member("public_repos"));
+    this.gists     = Gth.UserItem(this.json.get_int_member("public_gists"));
+    this.followers = Gth.UserItem(this.json.get_int_member("followers"));
+    this.following = Gth.UserItem(this.json.get_int_member("following"));
   }
 
-  public void fetch(string kind) {
+  public void fetch(string thing) {
     Json.Array arr;
-    var url = this.url + "/" + kind;
+    var url = this.url + "/" + thing;
 
-    var session = new Soup.Session();
+    var session = new Soup.Session.with_options("user-agent", USER_AGENT, null);
     var msg     = new Soup.Message("GET", url);
     var parser  = new Json.Parser();
 
-    msg.request_headers.append("User-Agent", user_agent);
     session.send_message(msg);
-
-    Soup.MessageBody res = msg.response_body;
-    parser.load_from_data((string) res.data);
+    parser.load_from_data((string) msg.response_body.data);
 
     arr = parser.get_root().get_array();
 
-    switch (kind) {
+    switch (thing) {
       case "repos": {
-        this.repos_arr = new GithubRepo[arr.get_length()];
-
         arr.foreach_element((self, idx, node) => {
-          var obj = node.get_object();
-
-          var name = obj.get_string_member("name");
-          var desc = obj.get_string_member("description");
-
-          this.repos_arr[idx] = GithubRepo() {
-            name = name,
-            desc = (desc == null) ? "(no description)" : desc
-          };
+          this.repos.arr[idx] = 
+            node
+              .get_object()
+              .get_string_member("name");
         });
 
         break;
       }
 
       case "gists": {
-        this.gists_arr = new string[arr.get_length()];
-
         arr.foreach_element((self, idx, node) => {
-          var obj  = node.get_object();
-          var desc = obj.get_string_member("description");
-          this.gists_arr[idx] = desc;
+          this.gists.arr[idx] =
+            node
+              .get_object()
+              .get_string_member("description");
         });
 
         break;
       }
 
       case "followers": {
-        this.followers_arr = new string[arr.get_length()];
-
         arr.foreach_element((self, idx, node) => {
-          var obj  = node.get_object();
-          var user = obj.get_string_member("login");
-          this.followers_arr[idx] = user;
+          this.followers.arr[idx] = 
+            node
+              .get_object()
+              .get_string_member("login");
         });
 
         break;
       }
 
       case "following": {
-        this.following_arr = new string[arr.get_length()];
-
         arr.foreach_element((self, idx, node) => {
-          var obj  = node.get_object();
-          var user = obj.get_string_member("login");
-          this.following_arr[idx] = user;
+          this.following.arr[idx] = 
+            node
+              .get_object()
+              .get_string_member("login");
         });
 
         break;
       }
 
       default: {
-        print("Unsupported endpoint: %s\n", kind);
+        print("Unsupported endpoint: %s\n", thing);
         break;
       }
     }
@@ -155,46 +139,42 @@ int main(string[] args) {
     print("No arguments\n");
   } else {
     for (var i = 1; i < args.length; i++) {
-      var user = new GithubUser(args[i]);
+      var user = new Gth.User(args[i]);
 
       print("Name: %s\n", user.name);
       print("Bio: %s\n",  user.bio);
       print("Link: %s\n", user.link);
 
-      print(@"Public repos: $(user.repos_count)\n");
+      print(@"Repos: $(user.repos.count)\n");
       if (repos) {
         user.fetch("repos");
 
-        for (var x = 0; x < user.repos_arr.length; x++) {
-          print("| %d. %s: %s\n", x + 1, user.repos_arr[x].name, user.repos_arr[x].desc);
-        }
+        for (var x = 0; x < user.repos.arr.length; x++)
+          print("| %d. %s\n", x + 1, user.repos.arr[x]);
       }
 
-      print(@"Public gists: $(user.gists_count)\n");
+      print(@"Gists: $(user.gists.count)\n");
       if (gists) {
         user.fetch("gists");
 
-        for (var x = 0; x < user.gists_arr.length; x++) {
-          print("| %d. %s\n", x + 1, user.gists_arr[x]);
-        }
+        for (var x = 0; x < user.gists.arr.length; x++)
+          print("| %d. %s\n", x + 1, user.gists.arr[x]);
       }
 
-      print(@"Public followers: $(user.followers_count)\n");
+      print(@"Followers: $(user.followers.count)\n");
       if (followers) {
         user.fetch("followers");
 
-        for (var x = 0; x < user.followers_arr.length; x++) {
-          print("| @%s\n", user.followers_arr[x]);
-        }
+        for (var x = 0; x < user.followers.arr.length; x++)
+          print("| @%s\n", user.followers.arr[x]);
       }
 
-      print(@"Public following: $(user.following_count)\n");
+      print(@"Following: $(user.following.count)\n");
       if (following) {
         user.fetch("following");
 
-        for (var x = 0; x < user.following_arr.length; x++) {
-          print("| @%s\n", user.following_arr[x]);
-        }
+        for (var x = 0; x < user.following.arr.length; x++)
+          print("| @%s\n", user.following.arr[x]);
       }
 
       print("\n");
