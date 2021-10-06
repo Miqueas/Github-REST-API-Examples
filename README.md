@@ -85,6 +85,8 @@ And, finally, run it:
 mono Github.exe
 ```
 
+__Postdata__: I tried these commands on Windows and it works in the same way.
+
 ### Python
 
 Just run:
