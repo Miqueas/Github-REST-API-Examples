@@ -24,17 +24,17 @@ class GithubUser
   attr_accessor :repos, :gists, :followers, :following
 
   def initialize(username)
-    type_err = TypeError.new "Bad argument for 'new'. String expected, got #{username.class}"
-    raise type_err if !username.is_a? String
+    type_err = TypeError.new("Bad argument for 'new'. String expected, got #{username.class}")
+    raise type_err unless username.is_a? String
 
-    @url = URI API_USERS_URL + username
+    @url = URI(API_USERS_URL + username)
 
     begin
-      res = Net::HTTP.get_response @url
-      @json = JSON.parse res.body
+      res = Net::HTTP.get_response(@url)
+      @json = JSON.parse(res.body)
     rescue => err
-      puts "Something went wrong! Here's some details:"
-      puts err.message
+      puts("Something went wrong! Here's some details:")
+      puts(err.message)
     end
 
     @name           = @json['name']     || ''
@@ -48,89 +48,89 @@ class GithubUser
   end
 
   def fetch(thing)
-    type_err = TypeError.new "Bad argument for 'Fetch'. String expected, got #{thing.class}"
+    type_err = TypeError.new("Bad argument for 'Fetch'. String expected, got #{thing.class}")
     raise type_err if !thing.is_a? String
 
     begin
-      url = URI @url.to_s + '/' + thing
-      res = Net::HTTP.get_response url
-      arr = JSON.parse res.body
+      url = URI(@url.to_s + '/' + thing)
+      res = Net::HTTP.get_response(url)
+      arr = JSON.parse(res.body)
     rescue => err
-      puts "Something's went wrong! Here's some details:"
-      puts err.message
+      puts("Something's went wrong! Here's some details:")
+      puts(err.message)
     end
 
     case thing
       when 'repos'
         for val in arr do
-          @repos[:arr].push val['name']
+          @repos[:arr].push(val['name'])
         end
       when 'gists'
         for val in arr do
-          @gists[:arr].push val['description']
+          @gists[:arr].push(val['description'])
         end
       when 'followers'
         for val in arr do
-          @followers[:arr].push '@' + val['login']
+          @followers[:arr].push('@' + val['login'])
         end
       when 'following'
         for val in arr do
-          @following[:arr].push '@' + val['login']
+          @following[:arr].push('@' + val['login'])
         end
       else
-        puts "Unsupported endpoint: #{kind}"
+        puts("Unsupported endpoint: #{kind}")
     end
   end
 end
 
 if ARGV.size == 0
-  err = OptionParser::ParseError.new 'see -h or --help for details'
+  err = OptionParser::ParseError.new('see -h or --help for details')
   err.reason = 'No arguments'
   raise err
 else
   for arg in ARGV
-    user = GithubUser.new arg
+    user = GithubUser.new(arg)
 
-    puts "Name: #{user.name}"
-    puts "Bio: #{user.bio}"
-    puts "Link: #{user.link}"
+    puts("Name: #{user.name}")
+    puts("Bio: #{user.bio}")
+    puts("Link: #{user.link}")
 
-    puts "Public repos: #{user.repos[:count]}"
+    puts("Public repos: #{user.repos[:count]}")
     if opts[:Repos]
-      user.fetch 'repos'
+      user.fetch('repos')
 
       for i in 0 ... user.repos[:arr].size
-        puts "| #{i + 1} #{user.repos[:arr][i]}"
+        puts("| #{i + 1} #{user.repos[:arr][i]}")
       end
     end
 
-    puts "Public gists: #{user.gists[:count]}"
+    puts("Public gists: #{user.gists[:count]}")
     if opts[:Gists]
-      user.fetch 'gists'
+      user.fetch('gists')
 
       for i in 0 ... user.gists[:arr].size
-        puts "| #{i + 1}. #{user.gists[:arr][i]}"
+        puts("| #{i + 1}. #{user.gists[:arr][i]}")
       end
     end
 
-    puts "Followers: #{user.followers[:count]}"
+    puts("Followers: #{user.followers[:count]}")
     if opts[:Followers]
-      user.fetch 'followers'
+      user.fetch('followers')
 
       for v in user.followers[:arr]
-        puts "| #{user.followers[:arr].index(v) + 1}. #{v}"
+        puts("| #{user.followers[:arr].index(v) + 1}. #{v}")
       end
     end
 
-    puts "Following: #{user.following[:count]}"
+    puts("Following: #{user.following[:count]}")
     if opts[:Following]
-      user.fetch 'following'
+      user.fetch('following')
 
       for v in user.following[:arr]
-        puts "| #{user.following[:arr].index(v) + 1}. #{v}"
+        puts("| #{user.following[:arr].index(v) + 1}. #{v}")
       end
     end
 
-    print "\n"
+    print("\n")
   end
 end
