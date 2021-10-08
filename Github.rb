@@ -67,19 +67,19 @@ class GithubUser
     case thing
       when 'repos'
         for val in arr do
-          @repos[:arr].push(val[:name])
+          @repos[:arr].push(val['name'])
         end
       when 'gists'
         for val in arr do
-          @gists[:arr].push(val[:description])
+          @gists[:arr].push(val['description'])
         end
       when 'followers'
         for val in arr do
-          @followers[:arr].push('@' + val[:login])
+          @followers[:arr].push('@' + val['login'])
         end
       when 'following'
         for val in arr do
-          @following[:arr].push('@' + val[:login])
+          @following[:arr].push('@' + val['login'])
         end
       else
         puts("Unsupported endpoint: #{thing}")
