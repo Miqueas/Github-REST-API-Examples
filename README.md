@@ -25,6 +25,22 @@ After you have all these libraries, then run the example:
 lua Github.lua
 ```
 
+### Nim
+
+Build the Nim example with:
+
+```
+nim c -d:ssl Github.nim
+```
+
+And run:
+
+```
+./Github ...
+```
+
+__NOTE__: On Windows (and probably macOS too) you'll need to download a [SSL/TLS Certificate](https://curl.se/ca/cacert.pem) and put it into the folder where you compiled the example. This is due to a [Nim bug](https://github.com/nim-lang/Nim/issues/782) and that's the temporary fix.
+
 ### Go
 
 Just run with:
