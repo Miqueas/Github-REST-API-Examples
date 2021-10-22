@@ -1,7 +1,7 @@
-# TODO: write the example
 import std/httpclient
+import std/strformat
+import std/parseopt
 import std/json
-# import std/parseopt
 from std/os import commandLineParams
 
 const BASE_URL = "https://api.github.com/users/"
@@ -64,15 +64,64 @@ method fetch*(self: GthUser, thing: string): void {.base.} =
     else:
       echo "Unsupported endpoint: ", thing
 
-let
-  args = commandLineParams()
-  # TODO: handle commandline switches
-  # opts = initOptParser(args)
+var
+  cmdline = commandLineParams()
+  args: seq[string]
+  opts: tuple[
+    repos: bool,
+    gists: bool,
+    followers: bool,
+    following: bool
+  ]
 
-if args.len() > 0:
+for kind, name, value in getopt(cmdline):
+  case kind:
+    of cmdArgument: args.add(name)
+    of cmdShortOption, cmdLongOption:
+      case name:
+        of "r", "repos": opts.repos = true
+        of "g", "gists": opts.gists = true
+        of "f", "followers": opts.followers = true
+        of "F", "following": opts.following = true
+        else: continue
+    of cmdEnd: break
+
+if args.len() == 0:
+  echo "No arguments, nothing to do."
+else:
   for username in args:
     var user = newGthUser(username)
-    echo user.name
-    echo user.bio
-    echo user.link
+
+    echo "Name: ", user.name
+    echo "Bio: ", user.bio
+    echo "Link: ", user.link
+
+    echo "Public repos: ", user.repos.count
+    if opts.repos:
+      user.fetch("repos")
+
+      for i, v in user.repos.arr:
+        echo fmt"| {(i + 1):03}. {v}"
+    
+    echo "Public gists: ", user.gists.count
+    if opts.gists:
+      user.fetch("gists")
+
+      for i, v in user.gists.arr:
+        echo fmt"| {(i + 1):03}. {v}"
+    
+    echo "Public followers: ", user.followers.count
+    if opts.followers:
+      user.fetch("followers")
+
+      for v in user.followers.arr:
+        echo fmt"| @{v}"
+    
+    echo "Public following: ", user.following.count
+    if opts.following:
+      user.fetch("following")
+
+      for v in user.following.arr:
+        echo fmt"| @{v}"
+    
     echo ""
