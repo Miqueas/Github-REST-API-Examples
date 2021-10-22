@@ -1,9 +1,10 @@
 # TODO: write the example
 import std/httpclient
 import std/json
-import std/uri
+# import std/parseopt
+from std/os import commandLineParams
 
-const BASE_URL = parseUri("https://api.github.com/users")
+const BASE_URL = "https://api.github.com/users/"
 
 type
   GthUserItem* = ref object
@@ -13,7 +14,7 @@ type
   GthUser* = ref object
     # Private
     obj: JsonNode
-    url: Uri
+    url: string
     # Public
     name*: string
     bio*: string
@@ -25,9 +26,9 @@ type
 
 proc newGthUser*(username: string): GthUser =
   var self = GthUser()
-  self.url = parseUri($(BASE_URL / username))
+  self.url = BASE_URL & username
 
-  var res  = newHttpClient().getContent($self.url)
+  var res  = newHttpClient().getContent(self.url)
   self.obj = parseJson(res)
 
   self.name = self.obj["name"].getStr()
@@ -41,5 +42,37 @@ proc newGthUser*(username: string): GthUser =
 
   return self
 
-var user = newGthUser("Miqueas")
-echo user[]
+method fetch*(self: GthUser, thing: string): void {.base.} =
+  var
+    url = self.url & '/' & thing
+    res = newHttpClient().getContent(url)
+    arr = parseJson(res)
+  
+  case thing
+    of "repos":
+      for v in arr.items():
+        self.repos.arr.add(v["name"].getStr())
+    of "gists":
+      for v in arr.items():
+        self.gists.arr.add(v["description"].getStr())
+    of "followers":
+      for v in arr.items():
+        self.followers.arr.add(v["login"].getStr())
+    of "following":
+      for v in arr.items():
+        self.following.arr.add(v["login"].getStr())
+    else:
+      echo "Unsupported endpoint: ", thing
+
+let
+  args = commandLineParams()
+  # TODO: handle commandline switches
+  # opts = initOptParser(args)
+
+if args.len() > 0:
+  for username in args:
+    var user = newGthUser(username)
+    echo user.name
+    echo user.bio
+    echo user.link
+    echo ""
