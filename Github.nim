@@ -7,11 +7,11 @@ from std/os import commandLineParams
 const BASE_URL = "https://api.github.com/users/"
 
 type
-  GthUserItem* = ref object
+  GthUserItem* = object
     count*: int
     arr*: seq[string]
 
-  GthUser* = ref object
+  GthUser* = object
     # Private
     obj: JsonNode
     url: string
@@ -24,10 +24,9 @@ type
     followers*: GthUserItem
     following*: GthUserItem
 
-proc newGthUser*(username: string): GthUser =
-  var self = GthUser()
+proc init*(self: var GthUser; username: string) =
   self.url = BASE_URL & username
-
+    
   var res  = newHttpClient().getContent(self.url)
   self.obj = parseJson(res)
 
@@ -40,9 +39,7 @@ proc newGthUser*(username: string): GthUser =
   self.followers = GthUserItem(count: self.obj["followers"].getInt())
   self.following = GthUserItem(count: self.obj["following"].getInt())
 
-  return self
-
-method fetch*(self: GthUser, thing: string): void {.base.} =
+proc fetch*(self: var GthUser; thing: string) =
   var
     url = self.url & '/' & thing
     res = newHttpClient().getContent(url)
@@ -90,7 +87,8 @@ if args.len() == 0:
   echo "No arguments, nothing to do."
 else:
   for username in args:
-    var user = newGthUser(username)
+    var user = GthUser()
+    user.init(username)
 
     echo "Name: ", user.name
     echo "Bio: ", user.bio
