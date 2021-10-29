@@ -1,8 +1,4 @@
-import std/httpclient
-import std/strformat
-import std/parseopt
-import std/json
-from std/os import commandLineParams
+import std/[httpclient, strformat, parseopt, json, os]
 
 const BASE_URL = "https://api.github.com/users/"
 
