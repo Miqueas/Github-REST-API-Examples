@@ -1,0 +1,28 @@
+image: gitpod/workspace-base
+
+# tasks:
+#   - name: Setup Lua
+#     init: sudo apt install -y lua5.1
+  
+#   - name: Setup Nim
+#     init: |
+#       wget -qO $HOME/choosenim https://nim-lang.org/choosenim/init.sh
+#       chmod +x $HOME/choosenim
+#       $HOME/choosenim -y
+#       echo "export PATH=$PATH:$HOME/.nimble/bin" >> $HOME/.bashrc
+
+#   - name: Setup Vala
+#     init: sudo apt install -y valac
+  
+#   - name: Setup Ruby
+#     init: |
+#       wget -qO- https://github.com/rbenv/rbenv-installer/raw/HEAD/bin/rbenv-installer | bash
+#       rbenv install 3.0.3
+#       gem install solargraph
+
+vscode:
+  extensions:
+    - sumneko.lua
+    - nimsaem.nimvscode
+    - prince781.vala
+    - castwide.solargraph
