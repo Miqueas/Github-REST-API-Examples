@@ -1,24 +1,34 @@
 image: gitpod/workspace-base
 
-# tasks:
-#   - name: Setup Lua
-#     init: sudo apt install -y lua5.1
-  
-#   - name: Setup Nim
-#     init: |
-#       wget -qO $HOME/choosenim https://nim-lang.org/choosenim/init.sh
-#       chmod +x $HOME/choosenim
-#       $HOME/choosenim -y
-#       echo "export PATH=$PATH:$HOME/.nimble/bin" >> $HOME/.bashrc
+tasks:
+  - name: Setup Nim
+    command: |
+      wget -qO $HOME/choosenim https://nim-lang.org/choosenim/init.sh
+      chmod +x $HOME/choosenim
+      $HOME/choosenim -y
+      echo "export PATH=$PATH:$HOME/.nimble/bin" >> $HOME/.bashrc
 
-#   - name: Setup Vala
-#     init: sudo apt install -y valac
+  - name: Setup Ruby
+    command: |
+      wget -qO- https://github.com/rbenv/rbenv-installer/raw/HEAD/bin/rbenv-installer | bash
+      rbenv install 3.1.1
+      gem install solargraph
+
+  - name: Setup Go
+    command: |
+      cd $HOME
+      curl -sSL https://git.io/g-install | sh -s -- bash -y
   
-#   - name: Setup Ruby
-#     init: |
-#       wget -qO- https://github.com/rbenv/rbenv-installer/raw/HEAD/bin/rbenv-installer | bash
-#       rbenv install 3.0.3
-#       gem install solargraph
+  - name: Setup Vala and Lua
+    command:
+      sudo apt update; sudo apt upgrade -y
+      sudo add-apt-repository -y ppa:vala-team/ppa
+      sudo apt update; sudo apt upgrade -y
+      sudo apt install -y valac lua5.1
+      echo 'deb http://download.opensuse.org/repositories/home:/Prince781/xUbuntu_21.04/ /' | sudo tee /etc/apt/sources.list.d/home:Prince781.list
+      curl -fsSL https://download.opensuse.org/repositories/home:Prince781/xUbuntu_21.04/Release.key | gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/home_Prince781.gpg > /dev/null
+      sudo apt update
+      sudo apt install -y vala-language-server
 
 vscode:
   extensions:
@@ -26,3 +36,4 @@ vscode:
     - nimsaem.nimvscode
     - prince781.vala
     - castwide.solargraph
+    - golang.go
