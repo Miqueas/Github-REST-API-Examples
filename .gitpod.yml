@@ -19,7 +19,7 @@ tasks:
       cd $HOME
       curl -sSL https://git.io/g-install | sh -s -- bash -y
   
-  - name: Setup Vala and Lua
+  - name: Setup Vala, D and Lua
     command:
       sudo apt update; sudo apt upgrade -y
       sudo add-apt-repository -y ppa:vala-team/ppa
@@ -29,6 +29,13 @@ tasks:
       curl -fsSL https://download.opensuse.org/repositories/home:Prince781/xUbuntu_21.04/Release.key | gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/home_Prince781.gpg > /dev/null
       sudo apt update
       sudo apt install -y vala-language-server
+      sudo wget https://netcologne.dl.sourceforge.net/project/d-apt/files/d-apt.list -O /etc/apt/sources.list.d/d-apt.list
+      sudo apt update --allow-insecure-repositories -y
+      sudo apt upgrade -y
+      sudo apt -y --allow-unauthenticated install --reinstall d-apt-keyring
+      sudo apt update -y
+      sudo apt install -y dmd-compiler dmd-tools dmd-doc dub python3-pip
+      sudo pip3 install -U meson ninja
 
 vscode:
   extensions:
@@ -37,3 +44,4 @@ vscode:
     - prince781.vala
     - castwide.solargraph
     - golang.go
+    - webfreak.code-d
