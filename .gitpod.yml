@@ -1,45 +1,55 @@
 image: gitpod/workspace-base
 
 tasks:
-  - name: Setup Nim
+  - name: Setup Workspace
     command: |
-      wget -qO $HOME/choosenim https://nim-lang.org/choosenim/init.sh
-      chmod +x $HOME/choosenim
-      $HOME/choosenim -y
-      echo "export PATH=$PATH:$HOME/.nimble/bin" >> $HOME/.bashrc
-
-  - name: Setup Ruby
-    command: |
-      wget -qO- https://github.com/rbenv/rbenv-installer/raw/HEAD/bin/rbenv-installer | bash
-      rbenv install 3.1.1
-      gem install solargraph
-
-  - name: Setup Go
-    command: |
-      cd $HOME
-      curl -sSL https://git.io/g-install | sh -s -- bash -y
-  
-  - name: Setup Vala, D and Lua
-    command:
+      # Vala and Lua
       sudo apt update; sudo apt upgrade -y
       sudo add-apt-repository -y ppa:vala-team/ppa
       sudo apt update; sudo apt upgrade -y
       sudo apt install -y valac lua5.1 apt-transport-https
+
+      # Vala language server
       echo 'deb http://download.opensuse.org/repositories/home:/Prince781/xUbuntu_21.04/ /' | sudo tee /etc/apt/sources.list.d/home:Prince781.list
       curl -fsSL https://download.opensuse.org/repositories/home:Prince781/xUbuntu_21.04/Release.key | gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/home_Prince781.gpg > /dev/null
       sudo apt update
       sudo apt install -y vala-language-server
+
+      # D
       sudo wget https://netcologne.dl.sourceforge.net/project/d-apt/files/d-apt.list -O /etc/apt/sources.list.d/d-apt.list
       sudo apt update --allow-insecure-repositories -y
       sudo apt upgrade -y
       sudo apt -y --allow-unauthenticated install --reinstall d-apt-keyring
       sudo apt update; sudo apt upgrade -y
-      sudo apt install -y dmd-compiler dmd-tools dmd-doc dub python3-pip
-      sudo pip3 install -U meson ninja
+      sudo apt install -y dmd-compiler dmd-tools dub
+
+      # Dart
       sudo sh -c 'wget -qO- https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add -'
       sudo sh -c 'wget -qO- https://storage.googleapis.com/download.dartlang.org/linux/debian/dart_stable.list > /etc/apt/sources.list.d/dart_stable.list'
       sudo apt update; sudo apt upgrade -y
       sudo apt install -y dart
+
+      # Nim
+      wget -qO $HOME/choosenim https://nim-lang.org/choosenim/init.sh
+      chmod +x $HOME/choosenim
+      $HOME/choosenim -y
+      echo "export PATH=$PATH:$HOME/.nimble/bin" >> $HOME/.bashrc
+
+      # Ruby
+      wget -qO- https://github.com/rbenv/rbenv-installer/raw/HEAD/bin/rbenv-installer | bash
+      rbenv install 3.1.1
+      gem install solargraph
+
+      # Go
+      cd $HOME
+      curl -sSL https://git.io/g-install | sh -s -- bash -y
+
+      # C# (Mono)
+      sudo apt install -y gnupg ca-certificates
+      sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF
+      echo "deb https://download.mono-project.com/repo/ubuntu stable-focal main" | sudo tee /etc/apt/sources.list.d/mono-official-stable.list
+      sudo apt update; sudo apt upgrade -y
+      sudo apt install -y mono-complete
 
 vscode:
   extensions:
