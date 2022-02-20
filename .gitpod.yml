@@ -7,7 +7,7 @@ tasks:
       sudo apt update; sudo apt upgrade -y
       sudo add-apt-repository -y ppa:vala-team/ppa
       sudo apt update; sudo apt upgrade -y
-      sudo apt install -y valac lua5.1 apt-transport-https
+      sudo apt install -y valac lua5.1 apt-transport-https gnupg ca-certificates
 
       # Vala language server
       echo 'deb http://download.opensuse.org/repositories/home:/Prince781/xUbuntu_21.04/ /' | sudo tee /etc/apt/sources.list.d/home:Prince781.list
@@ -45,7 +45,6 @@ tasks:
       curl -sSL https://git.io/g-install | sh -s -- bash -y
 
       # C# (Mono)
-      sudo apt install -y gnupg ca-certificates
       sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF
       echo "deb https://download.mono-project.com/repo/ubuntu stable-focal main" | sudo tee /etc/apt/sources.list.d/mono-official-stable.list
       sudo apt update; sudo apt upgrade -y
