@@ -3,17 +3,26 @@ image: gitpod/workspace-base
 tasks:
   - name: Setup Workspace
     command: |
+      # Go
+      cd $HOME
+      curl -sSL https://git.io/g-install | sh -s -- bash -y
+
       # Vala and Lua
       sudo apt update; sudo apt upgrade -y
       sudo add-apt-repository -y ppa:vala-team/ppa
       sudo apt update; sudo apt upgrade -y
-      sudo apt install -y valac lua5.1 apt-transport-https gnupg ca-certificates
+      sudo apt install -y valac lua5.1 apt-transport-https gnupg ca-certificates libvala-0.48-dev libgee-0.8-dev libjson-glib-dev libjsonrpc-glib-1.0-dev python3-pip
 
       # Vala language server
-      echo 'deb http://download.opensuse.org/repositories/home:/Prince781/xUbuntu_21.04/ /' | sudo tee /etc/apt/sources.list.d/home:Prince781.list
-      curl -fsSL https://download.opensuse.org/repositories/home:Prince781/xUbuntu_21.04/Release.key | gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/home_Prince781.gpg > /dev/null
-      sudo apt update
-      sudo apt install -y vala-language-server
+      sudo pip3 install -U meson ninja
+      wget -c https://github.com/Prince781/vala-language-server/releases/download/0.48.4/vala-language-server-0.48.4.tar.xz
+      tar -xf vala-language-server-0.48.4.tar.xz
+      cd vala-language-server-0.48.4
+      meson B -Dtests=false -Dman_pages=disabled
+      ninja -C B
+      sudo ninja -C B install
+      cd ..
+      rm -rf vala-language-server-0.48.4/ vala-language-server-0.48.4.tar.xz
 
       # D
       sudo wget https://netcologne.dl.sourceforge.net/project/d-apt/files/d-apt.list -O /etc/apt/sources.list.d/d-apt.list
@@ -30,19 +39,16 @@ tasks:
       sudo apt install -y dart
 
       # Nim
-      wget -qO $HOME/choosenim https://nim-lang.org/choosenim/init.sh
-      chmod +x $HOME/choosenim
-      $HOME/choosenim -y
+      wget -qO choosenim https://nim-lang.org/choosenim/init.sh
+      chmod +x choosenim
+      ./choosenim -y
       echo "export PATH=$PATH:$HOME/.nimble/bin" >> $HOME/.bashrc
+      rm -rf ./choosenim
 
       # Ruby
       wget -qO- https://github.com/rbenv/rbenv-installer/raw/HEAD/bin/rbenv-installer | bash
       rbenv install 3.1.1
       gem install solargraph
-
-      # Go
-      cd $HOME
-      curl -sSL https://git.io/g-install | sh -s -- bash -y
 
       # C# (Mono)
       sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF
