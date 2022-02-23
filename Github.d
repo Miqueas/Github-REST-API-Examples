@@ -144,6 +144,6 @@ void main(string[] args) {
       }
     }
   } else {
-    writeln("No arguments, exiting.");
+    writeln("No arguments, nothing to do.");
   }
 }
