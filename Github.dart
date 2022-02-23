@@ -1,3 +1,5 @@
+import 'package:args/args.dart';
+import 'package:dio/dio.dart';
 import 'dart:convert';
 import 'dart:io';
 
@@ -23,11 +25,23 @@ class GthUser {
 
   GthUser(String username) : this._url = BASE_URL + username;
 
-  void init() async {}
+  Future<void> init() async {
+    var obj = await Dio().get(this._url).data;
+
+    this.name = obj["name"];
+    this.bio = obj["bio"];
+    this.link = obj["html_url"];
+
+    this.repos = GthUserItem(obj["public_repos"]);
+    this.gists = GthUserItem(obj["public_gists"]);
+    this.followers = GthUserItem(obj["followers"]);
+    this.following = GthUserItem(obj["following"]);
+  }
+
+  Future<void> fetch(String thing) async {}
 }
 
 void main(List<String> args) async {
   var user = GthUser(args[0]);
-  user.init();
-  print(user._url);
+  await user.init();
 }
