@@ -104,42 +104,46 @@ void main(string[] args) {
     return;
   }
 
-  for (int i = 1; i < args.length; i++) {
-    auto user = new GthUser(args[i]);
-    writeln("Name: ", user.name);
-    writeln("Bio: ", user.bio);
-    writeln("Link: ", user.link);
+  if (args.length > 0) {
+    for (int i = 1; i < args.length; i++) {
+      auto user = new GthUser(args[i]);
+      writeln("Name: ", user.name);
+      writeln("Bio: ", user.bio);
+      writeln("Link: ", user.link);
 
-    writeln("Public repos: ", user.repos.count);
-    if (opts["repos"]) {
-      user.fetch("repos");
+      writeln("Public repos: ", user.repos.count);
+      if (opts["repos"]) {
+        user.fetch("repos");
 
-      foreach (idx, val; user.repos.arr)
-        writefln(" | %03d. %s", idx + 1, val);
+        foreach (idx, val; user.repos.arr)
+          writefln(" | %03d. %s", idx + 1, val);
+      }
+
+      writeln("Public gists: ", user.gists.count);
+      if (opts["gists"]) {
+        user.fetch("gists");
+
+        foreach (idx, val; user.gists.arr)
+          writefln(" | %03d. %s", idx + 1, val);
+      }
+
+      writeln("Followers: ", user.followers.count);
+      if (opts["followers"]) {
+        user.fetch("followers");
+
+        foreach (name; user.followers.arr)
+          writefln(" | @%s", name);
+      }
+
+      writeln("Following: ", user.following.count);
+      if (opts["following"]) {
+        user.fetch("following");
+
+        foreach (name; user.following.arr)
+          writefln(" | @%s", name);
+      }
     }
-
-    writeln("Public gists: ", user.gists.count);
-    if (opts["gists"]) {
-      user.fetch("gists");
-
-      foreach (idx, val; user.gists.arr)
-        writefln(" | %03d. %s", idx + 1, val);
-    }
-
-    writeln("Followers: ", user.followers.count);
-    if (opts["followers"]) {
-      user.fetch("followers");
-
-      foreach (name; user.followers.arr)
-        writefln(" | @%s", name);
-    }
-
-    writeln("Following: ", user.following.count);
-    if (opts["following"]) {
-      user.fetch("following");
-
-      foreach (name; user.following.arr)
-        writefln(" | @%s", name);
-    }
+  } else {
+    writeln("No arguments, exiting.");
   }
 }
