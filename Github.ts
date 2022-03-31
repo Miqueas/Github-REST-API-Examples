@@ -118,5 +118,37 @@ for (const val of opts._) {
   print(`Bio: ${user.bio}`);
   print(`Link: ${user.link}`);
 
+  print(`Public repos: ${user.repos.count}`);
+  if (opts.r) {
+    await user.fetch("repos");
+
+    for (const idx in user.repos.arr)
+      print(` | ${parseInt(idx) + 1} ${user.repos.arr[idx]}`);
+  }
+
+  print(`Public gists: ${user.gists.count}`);
+  if (opts.g) {
+    await user.fetch("gists");
+
+    for (const idx in user.gists.arr)
+      print(` | ${parseInt(idx) + 1} ${user.gists.arr[idx]}`);
+  }
+
+  print(`Public followers: ${user.followers.count}`);
+  if (opts.followers) {
+    await user.fetch("followers");
+
+    for (const val of user.followers.arr)
+      print(` | @${val}`);
+  }
+
+  print(`Public following: ${user.following.count}`);
+  if (opts.following) {
+    await user.fetch("following");
+
+    for (const val of user.following.arr)
+      print(` | @${val}`);
+  }
+
   print();
 }
