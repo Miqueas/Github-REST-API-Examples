@@ -114,6 +114,7 @@ let opts = yargs(Deno.args)
 
 if (opts._.length <= 0) {
   print("Nothing to do.");
+  print("Pass -h or --help to see the help.");
   Deno.exit(1);
 }
 
