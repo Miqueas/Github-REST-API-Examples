@@ -1,7 +1,7 @@
 import yargs from "https://deno.land/x/yargs@v17.4.0-deno/deno.ts";
 
 const print = console.log;
-const BASE_URL = "https://api.github.com/users/"
+const BASE_URL = "https://api.github.com/users/";
 
 class GthUserItem {
   count: number;
@@ -15,27 +15,25 @@ class GthUserItem {
 
 class GthUser {
   username: string;
-  name!: string;
-  bio!: string;
-  link!: string;
-  repos!: GthUserItem;
-  gists!: GthUserItem;
-  followers!: GthUserItem;
-  following!: GthUserItem;
+  name?: string;
+  bio?: string;
+  link?: string;
+  repos?: GthUserItem;
+  gists?: GthUserItem;
+  followers?: GthUserItem;
+  following?: GthUserItem;
 
   constructor(username: string) {
     this.username = username;
   }
 
-  static async init(user: string): Promise<GthUser> {
+  static async create(user: string): Promise<GthUser> {
     let self = new GthUser(user);
-    let url = BASE_URL + user;
-
+    let url = BASE_URL + self.username;
     let res = await fetch(url);
     
-    if (!res.ok) {
+    if (!res.ok)
       throw new Error(`can't fetch url '${url}'`);
-    }
 
     let obj = await res.json();
 
@@ -55,31 +53,30 @@ class GthUser {
     let url = `${BASE_URL + this.username}/${thing}`
     let res = await fetch(url);
 
-    if (!res.ok) {
+    if (!res.ok)
       throw new Error(`can't fetch url '${url}'`);
-    }
 
     let arr = await res.json();
 
     switch (thing) {
       case "repos":
         for (const val of arr)
-          this.repos.arr.push(val.name);
+          this.repos?.arr.push(val.name);
         break;
 
       case "gists":
         for (const val of arr)
-          this.gists.arr.push(val.description);
+          this.gists?.arr.push(val.description);
         break;
 
       case "followers":
         for (const val of arr)
-          this.followers.arr.push(val.login);
+          this.followers?.arr.push(val.login);
         break;
 
       case "following":
         for (const val of arr)
-          this.following.arr.push(val.login);
+          this.following?.arr.push(val.login);
         break;
 
       default:
@@ -92,18 +89,27 @@ let opts = yargs(Deno.args)
   .version(false)
   .usage("$0 Github.ts [options...] <usernames...>")
   .option("repos", {
-    alias: "r", type: "boolean", describe: "Show user repos"
+    alias: "r",
+    type: "boolean",
+    describe: "Show user repos"
   })
   .option("gists", {
-    alias: "g", type: "boolean", describe: "Show user gists"
+    alias: "g",
+    type: "boolean",
+    describe: "Show user gists"
   })
   .option("followers", {
-    alias: "f", type: "boolean", describe: "Show user followers"
+    alias: "f",
+    type: "boolean",
+    describe: "Show user followers"
   })
   .option("following", {
-    alias: "F", type: "boolean", describe: "Show user following"
+    alias: "F",
+    type: "boolean",
+    describe: "Show user following"
   })
   .help("help", "Show this help")
+  .alias("h", "help")
   .parse();
 
 if (opts._.length <= 0) {
@@ -112,42 +118,46 @@ if (opts._.length <= 0) {
 }
 
 for (const val of opts._) {
-  let user = await GthUser.init(val);
+  let user = await GthUser.create(val);
 
   print(`Name: ${user.name}`);
   print(`Bio: ${user.bio}`);
   print(`Link: ${user.link}`);
 
-  print(`Public repos: ${user.repos.count}`);
+  print(`Public repos: ${user.repos?.count}`);
   if (opts.r) {
     await user.fetch("repos");
 
-    for (const idx in user.repos.arr)
-      print(` | ${parseInt(idx) + 1} ${user.repos.arr[idx]}`);
+    if (user.repos)
+      for (const idx in user.repos.arr)
+        print(` | ${parseInt(idx) + 1} ${user.repos.arr[parseInt(idx)]}`);
   }
 
-  print(`Public gists: ${user.gists.count}`);
+  print(`Public gists: ${user.gists?.count}`);
   if (opts.g) {
     await user.fetch("gists");
 
-    for (const idx in user.gists.arr)
-      print(` | ${parseInt(idx) + 1} ${user.gists.arr[idx]}`);
+    if (user.gists)
+      for (const idx in user.gists.arr)
+        print(` | ${parseInt(idx) + 1} ${user.gists.arr[parseInt(idx)]}`);
   }
 
-  print(`Public followers: ${user.followers.count}`);
+  print(`Public followers: ${user.followers?.count}`);
   if (opts.followers) {
     await user.fetch("followers");
 
-    for (const val of user.followers.arr)
-      print(` | @${val}`);
+    if (user.followers)
+      for (const val of user.followers.arr)
+        print(` | @${val}`);
   }
 
-  print(`Public following: ${user.following.count}`);
+  print(`Public following: ${user.following?.count}`);
   if (opts.following) {
     await user.fetch("following");
 
-    for (const val of user.following.arr)
-      print(` | @${val}`);
+    if (user.following)
+      for (const val of user.following.arr)
+        print(` | @${val}`);
   }
 
   print();
