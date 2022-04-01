@@ -87,7 +87,7 @@ class GthUser {
 
 let opts = yargs(Deno.args)
   .version(false)
-  .usage("$0 Github.ts [options...] <usernames...>")
+  .usage("Github [options...] <usernames...>")
   .option("repos", {
     alias: "r",
     type: "boolean",

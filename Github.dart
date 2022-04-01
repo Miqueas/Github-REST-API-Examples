@@ -13,7 +13,7 @@ class GthUserItem {
 }
 
 class GthUser {
-  late String _url;
+  String username;
 
   late String name;
   late String bio;
@@ -23,97 +23,132 @@ class GthUser {
   late GthUserItem followers;
   late GthUserItem following;
 
-  GthUser(String username) : this._url = BASE_URL + username;
+  GthUser(this.username);
 
-  Future<void> init() async {
-    var res = await http.get(Uri.parse(this._url));
+  static Future<GthUser> create(String user) async {
+    final self = GthUser(user);
+    var res = await http.get(Uri.parse(BASE_URL + self.username));
     var obj = jsonDecode(res.body);
 
-    this.name = obj["name"];
-    this.bio = obj["bio"];
-    this.link = obj["html_url"];
+    self.name = obj["name"];
+    self.bio = obj["bio"];
+    self.link = obj["html_url"];
 
-    this.repos = GthUserItem(obj["public_repos"]);
-    this.gists = GthUserItem(obj["public_gists"]);
-    this.followers = GthUserItem(obj["followers"]);
-    this.following = GthUserItem(obj["following"]);
+    self.repos = GthUserItem(obj["public_repos"]);
+    self.gists = GthUserItem(obj["public_gists"]);
+    self.followers = GthUserItem(obj["followers"]);
+    self.following = GthUserItem(obj["following"]);
+
+    return self;
   }
 
   Future<void> fetch(String thing) async {
-    var url = "${this._url}/$thing";
+    var url = "${BASE_URL + this.username}/$thing";
     var res = await http.get(Uri.parse(url));
     var arr = jsonDecode(res.body);
 
     switch (thing) {
       case "repos":
-        for (var v in arr) this.repos.arr.add(v["name"]);
+        for (var v in arr)
+          this.repos.arr.add(v["name"]);
+
         break;
+
       case "gists":
-        for (var v in arr) this.gists.arr.add(v["description"]);
+        for (var v in arr)
+          this.gists.arr.add(v["description"]);
+
         break;
+
       case "followers":
-        for (var v in arr) this.followers.arr.add(v["login"]);
+        for (var v in arr)
+          this.followers.arr.add(v["login"]);
+
         break;
+
       case "following":
-        for (var v in arr) this.following.arr.add(v["login"]);
+        for (var v in arr)
+          this.following.arr.add(v["login"]);
+
         break;
-      default: break;
+
+      default:
+        break;
     }
   }
 }
 
-void main(List<String> args) async {
-  var parser = ArgParser();
+void showHelp() {
+  print("Github [OPTIONS...] <USERNAMES...>");
+  print("");
+  print("Options:");
+  print("  -r, --repos      Show user repos                                     [boolean]");
+  print("  -g, --gists      Show user gists                                     [boolean]");
+  print("  -f, --followers  Show user followers                                 [boolean]");
+  print("  -F, --following  Show user following                                 [boolean]");
+  print("  -h, --help       Show this help                                      [boolean]");
+}
+
+void main(final List<String> args) async {
+  final parser = ArgParser();
   parser.addFlag("repos", abbr: "r", defaultsTo: false);
   parser.addFlag("gists", abbr: "g", defaultsTo: false);
   parser.addFlag("followers", abbr: "f", defaultsTo: false);
   parser.addFlag("following", abbr: "F", defaultsTo: false);
+  parser.addFlag("help", abbr: "h", defaultsTo: false);
 
-  var opts = parser.parse(args);
-  args = opts.rest;
+  final opts = parser.parse(args);
 
-  if (args.isNotEmpty) {
-    for (var arg in args) {
-      var user = GthUser(arg);
-      await user.init();
+  if (opts["help"]) {
+    showHelp();
+    exit(0);
+  }
 
-      print("Name: ${user.name}");
-      print("Bio: ${user.bio}");
-      print("Link: ${user.link}");
+  if (args.isEmpty) {
+    print("Nothing to do.");
+    print("Pass -h or --help to see the help.");
+    exit(1);
+  }
 
-      print("Public repos: ${user.repos.count}");
-      if (opts["repos"]) {
-        await user.fetch("repos");
+  for (final arg in opts.rest) {
+    final user = await GthUser.create(arg);
 
-        for (var i = 0; i < user.repos.arr.length; i++)
-          print(" | ${i + 1}. ${user.repos.arr[i]}");
-      }
+    print("Name: ${user.name}");
+    print("Bio: ${user.bio}");
+    print("Link: ${user.link}");
 
-      print("Public gists: ${user.gists.count}");
-      if (opts["gists"]) {
-        await user.fetch("gists");
+    print("Public repos: ${user.repos.count}");
+    if (opts["repos"]) {
+      await user.fetch("repos");
 
-        for (var i = 0; i < user.gists.arr.length; i++)
-          print(" | ${i + 1}. ${user.gists.arr[i]}");
-      }
-
-      print("Followers: ${user.followers.count}");
-      if (opts["followers"]) {
-        await user.fetch("followers");
-
-        for (var i = 0; i < user.followers.arr.length; i++)
-          print(" | ${i + 1}. ${user.followers.arr[i]}");
-      }
-
-      print("Following: ${user.following.count}");
-      if (opts["following"]) {
-        await user.fetch("following");
-
-        for (var i = 0; i < user.following.arr.length; i++)
-          print(" | ${i + 1}. ${user.following.arr[i]}");
-      }
+      for (final r in user.repos.arr)
+        print(" | $r");
     }
-  } else {
-    print("No arguments, nothing to do.");
+
+    print("Public gists: ${user.gists.count}");
+    if (opts["gists"]) {
+      await user.fetch("gists");
+
+      for (final g in user.gists.arr)
+        print(" | $g");
+    }
+
+    print("Followers: ${user.followers.count}");
+    if (opts["followers"]) {
+      await user.fetch("followers");
+
+      for (final u in user.followers.arr)
+        print(" | @$u");
+    }
+
+    print("Following: ${user.following.count}");
+    if (opts["following"]) {
+      await user.fetch("following");
+
+      for (final u in user.following.arr)
+        print(" | @$u");
+    }
+
+    print("");
   }
 }
