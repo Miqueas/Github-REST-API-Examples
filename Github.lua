@@ -3,7 +3,7 @@ local json     = require("rapidjson")
 local argparse = require("argparse")
 
 -- Base url for requests
-local API_USERS_URL = "https://api.github.com/users/"
+local BASE_URL = "https://api.github.com/users/"
 
 ---@class GthUser @Class for a github user basic info
 ---@field url       string (private) Url to make requests, for internal usage
@@ -20,13 +20,13 @@ local GthUser = {}
 --- Constructor for GthUser class
 ---@param username string The github username to get info
 ---@return GthUser
-function GthUser:new(username)
+function GthUser:init(username)
   assert(
     type(username) == "string",
-    "Bad argument for 'new', string expected, got " .. type(username)
+    "Bad argument for 'init', string expected, got " .. type(username)
   )
 
-  self.url  = API_USERS_URL .. username
+  self.url = BASE_URL .. username
   local res = req.get(self.url)
   self.json = json.decode(res.text)
 
@@ -34,8 +34,8 @@ function GthUser:new(username)
   self.bio  = self.json['bio']
   self.link = self.json['html_url']
 
-  self.repos     = { count = self.json['public_repos'], arr = {} }
-  self.gists     = { count = self.json['public_gists'], arr = {} }
+  self.repos = { count = self.json['public_repos'], arr = {} }
+  self.gists = { count = self.json['public_gists'], arr = {} }
   self.followers = { count = self.json['followers'],    arr = {} }
   self.following = { count = self.json['following'],    arr = {} }
 
@@ -48,7 +48,7 @@ end
 function GthUser:fetch(thing)
   assert(
     type(thing) == "string",
-    "Bad argument for 'new', string expected, got " .. type(thing)
+    "Bad argument for 'fetch', string expected, got " .. type(thing)
   )
 
   local url = self.url .. '/' .. thing
@@ -77,21 +77,21 @@ function GthUser:fetch(thing)
 end
 
 local opts = argparse({
-  name        = "Github.lua",
+  name = "Github.lua",
   description = "Simple example of the Github's REST API",
-  epilog      = "Check out https://github.com/M1que4s/Github-REST-API-Example"
+  epilog = "Check out https://github.com/M1que4s/Github-REST-API-Example"
 })
 
 opts:argument("usernames", "One or more usernames"):args("+")
 opts:flag("-f --followers", "Shows user followers", false)
 opts:flag("-F --following", "Shows user following", false)
-opts:flag("-r --repos",     "Shows user repos",     false)
-opts:flag("-g --gists",     "Shows user gists",     false)
+opts:flag("-r --repos", "Shows user repos", false)
+opts:flag("-g --gists", "Shows user gists", false)
 
 local args = opts:parse(arg)
 
-for _, v in ipairs(args.usernames) do
-  local user = GthUser:new(v)
+for _, user in ipairs(args.usernames) do
+  local user = GthUser:init(user)
 
   print("name: " .. user.name)
   print("bio: " .. user.bio)
@@ -132,4 +132,6 @@ for _, v in ipairs(args.usernames) do
       print("| @" .. v)
     end
   end
+
+  print()
 end

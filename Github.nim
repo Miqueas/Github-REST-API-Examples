@@ -22,10 +22,14 @@ type
 
 proc init*(self: var GthUser; username: string) =
   self.url = BASE_URL & username
-    
-  var res  = newHttpClient().getContent(self.url)
-  self.obj = parseJson(res)
 
+  let
+    cl = newHttpClient()
+    res  = cl.getContent(self.url)
+
+  defer: cl.close()
+
+  self.obj = parseJson(res)
   self.name = self.obj["name"].getStr()
   self.bio  = self.obj["bio"].getStr()
   self.link = self.obj["html_url"].getStr()
@@ -37,10 +41,13 @@ proc init*(self: var GthUser; username: string) =
 
 proc fetch*(self: var GthUser; thing: string) =
   var
+    cl = newHttpClient()
     url = self.url & '/' & thing
-    res = newHttpClient().getContent(url)
+    res = cl.getContent(url)
     arr = parseJson(res)
   
+  defer: cl.close()
+
   case thing
     of "repos":
       for v in arr.items():
@@ -57,8 +64,8 @@ proc fetch*(self: var GthUser; thing: string) =
     else:
       echo "Unsupported endpoint: ", thing
 
+let cmdline = commandLineParams()
 var
-  cmdline = commandLineParams()
   args: seq[string]
   opts: tuple[
     repos: bool,
@@ -69,15 +76,22 @@ var
 
 for kind, name, value in getopt(cmdline):
   case kind:
-    of cmdArgument: args.add(name)
+    of cmdArgument:
+      args.add(name)
     of cmdShortOption, cmdLongOption:
       case name:
-        of "r", "repos": opts.repos = true
-        of "g", "gists": opts.gists = true
-        of "f", "followers": opts.followers = true
-        of "F", "following": opts.following = true
-        else: continue
-    of cmdEnd: break
+        of "r", "repos":
+          opts.repos = true
+        of "g", "gists":
+          opts.gists = true
+        of "f", "followers":
+          opts.followers = true
+        of "F", "following":
+          opts.following = true
+        else:
+          continue
+    of cmdEnd:
+      break
 
 if args.len() == 0:
   echo "No arguments, nothing to do."
