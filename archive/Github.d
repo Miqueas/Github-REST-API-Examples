@@ -14,7 +14,7 @@ struct GthUserItem {
   this(long count) {
     this.count = to!int(count);
     // The length will change later
-    this.arr   = new string[0];
+    this.arr = new string[0];
   }
 }
 
