@@ -1,31 +1,24 @@
 import yargs from "https://deno.land/x/yargs@v17.4.0-deno/deno.ts";
 
+// Yeah I'm lazy af
 const print = console.log;
 const BASE_URL = "https://api.github.com/users/";
 
-class GthUserItem {
+type GthUserItem = {
   count: number;
   arr: string[];
-
-  constructor(n: number) {
-    this.count = n;
-    this.arr = [];
-  }
-}
+};
 
 class GthUser {
-  username: string;
-  name?: string;
-  bio?: string;
-  link?: string;
-  repos?: GthUserItem;
-  gists?: GthUserItem;
-  followers?: GthUserItem;
-  following?: GthUserItem;
+  name: string = "";
+  bio: string = "";
+  link: string = "";
+  repos: GthUserItem = { count: 0, arr: [] };
+  gists: GthUserItem = { count: 0, arr: [] };
+  followers: GthUserItem = { count: 0, arr: [] };
+  following: GthUserItem = { count: 0, arr: [] };
 
-  constructor(username: string) {
-    this.username = username;
-  }
+  constructor(public username: string) {}
 
   static async create(user: string): Promise<GthUser> {
     let self = new GthUser(user);
@@ -41,10 +34,10 @@ class GthUser {
     self.bio  = obj.bio;
     self.link = obj.html_url;
 
-    self.repos = new GthUserItem(obj.public_repos);
-    self.gists = new GthUserItem(obj.public_gists);
-    self.followers = new GthUserItem(obj.followers);
-    self.following = new GthUserItem(obj.following);
+    self.repos.count = obj.public_repos;
+    self.gists.count = obj.public_gists;
+    self.followers.count = obj.followers;
+    self.following.count = obj.following;
 
     return self;
   }
